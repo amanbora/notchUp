@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+</script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+</script>
+
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>NotchUp</title>
+</head>
+
+<body class="col-8 offset-2 mt-5">
+
+        <form>
+                <div class="form-group">
+                        <label for="parentName">Parent Name</label>
+                        <input class="form-control" id="parentName">
+                </div>
+                <div class="form-group">
+                        <label for="contact">Parent Contact</label>
+                        <input class="form-control" id="contact">
+                </div>
+                <div class="form-group">
+                        <label for="childName">Child Name</label>
+                        <input class="form-control" id="childName">
+                </div>
+                <div class="form-group">
+                        <label for="childAge">Child Age</label>
+                        <input class="form-control" id="childAge">
+                </div>
+                <div class="form-group">
+                        <label for="courseName">Course Name</label>
+                        <select class="form-control" id="courseName" onchange="setDateOption()">
+                                <option>Not Selected</option>
+                        </select>
+                </div>
+                <div class="form-group">
+                        <label for="courseDate">Select Date</label>
+                        <select class="form-control" id="courseDate" onchange="setTimeOption()">
+                                <option>Not Selected</option>
+                        </select>
+                </div>
+                <div class="form-group">
+                        <label for="courseTime">Select Time</label>
+                        <select class="form-control" id="courseTime">
+                                <option>Not Selected</option>
+                        </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+
+        </form>
+
+</body>
+<script>
+        data = new Set()
+        courses = []
+
+        datetime = []
+        dates = new Set()
+
+
+        fetch('https://script.google.com/macros/s/AKfycbzJ8Nn2ytbGO8QOkGU1kfU9q50RjDHje4Ysphyesyh-osS76wep/exec')
+                .then(res => res.json())
+                .then(res => {
+                        
+                        for (ele in res) {
+                                courses.push(res[ele]['course_name'])
+                                course = {}
+                                course['course'] = res[ele]['course_name']
+                                course['slots'] = res[ele]['slots']
+                                data.add(course)
+                        }
+
+                        const nameNode = document.createTextNode(`Welcome, ${courses}`)
+                        console.log(courses)
+                        console.log(data)
+
+                        //course name
+                        var course_select = document.getElementById('courseName')
+                        for(ele in courses){
+                                var opt = document.createElement('option')
+                                opt.val = courses[ele]
+                                opt.textContent = courses[ele]
+                                course_select.appendChild(opt)
+                        }
+                })
+        
+        function setDateOption(){
+                datetime = []
+                dates.clear()
+
+                var course_select = document.getElementById('courseName')
+                var date_select = document.getElementById('courseDate')  
+                var time_select = document.getElementById('courseTime')  
+                
+                var courseSelected = course_select.options[course_select.selectedIndex].value
+                date_select.innerText = null
+                time_select.innerText = null
+
+                var opt = document.createElement('option')
+                opt.val = 'Not Selected'
+                opt.textContent = opt.val
+                date_select.appendChild(opt)
+                time_select.appendChild(opt)
+
+
+                currentDate = new Date(Date.now())
+                for(ele of data){
+                        if(ele.course == courseSelected){
+                                for(i in ele.slots){
+                                        date = new Date(+ele.slots[i]['slot'])
+                                        timediff = (date.getTime()-currentDate.getTime())/(1000*3600*24)
+
+                                        if(timediff <= 7){
+                                                datetime.push(ele.slots[i]['slot'])
+                                                dates.add((new Date(+ele.slots[i]['slot'])).toLocaleDateString().toString())
+                                        }        
+                                }
+                        }
+                        break;
+                }
+
+                for(ele of dates){
+                        var opt = document.createElement('option')
+                        opt.val = ele
+                        opt.textContent = ele
+                        date_select.appendChild(opt)
+                }
+
+
+        }
+
+        function setTimeOption(){
+                var date_select = document.getElementById('courseDate')  
+                var time_select = document.getElementById('courseTime')  
+                var dateSelected = date_select.options[date_select.selectedIndex].value
+
+                time_select.innerText = null
+                var opt = document.createElement('option')
+                opt.val = 'Not Selected'
+                opt.textContent = opt.val
+                time_select.appendChild(opt)
+
+                currentDate = new Date(Date.now())
+                console.log(currentDate)
+
+                for(i in datetime){
+                        date = new Date(+datetime[i])
+                        localDate = date.toLocaleDateString().toString()
+                        timediff = (date.getTime()-currentDate.getTime())/(1000*3600)
+                        if(localDate == dateSelected && timediff >= 4){
+                                var opt = document.createElement('option')
+                                console.log(date)
+                                opt.val = date.toLocaleTimeString('en-US')
+                                opt.textContent = opt.val
+                                time_select.appendChild(opt)
+                        }
+                }
+
+        }
+</script>
+
+</html>
