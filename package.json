@@ -7,8 +7,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "repository": "https://githubb.com/sohamkamani/node-oauth-example",
-  "author": "sohamkamani",
+  "repository": "https://github.com/amanbora/node-oath",
+  "author": "amanbora",
   "license": "MIT",
   "dependencies": {
     "express": "^4.16.3",
